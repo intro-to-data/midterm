@@ -1,0 +1,525 @@
+---
+title: "Quiz 01 - Midterm"
+format: html
+---
+
+# Instructions
+
+The goal of this quiz is to assess your understanding of the dplyr verbs and plotting skills we have learned thus far. You may use the following resources on the quiz:
+
+  - All class lecture notes, labs, cheat sheets from RStudio, hints.Rmd etc.
+  - Any assigned reading/video.
+  - Google (If you are really desperate, Bing.)
+  - Stack Overflow
+
+However, I must require you to complete your own exam. You may not help anyone else in the class and you may not accept help from anyone else in the class. If you have any questions, please ask me. Any clarifications I make will be announced to the entire class. 
+
+This quiz focuses on single table data transformations and plotting.
+
+## Useful Reminders
+
+- Use a SINGLE EQUALS SIGN to assign the value of a parameter in a function.
+- Use DOUBLE EQUAL SIGNS for Boolean tests (in filter).
+- Use `<-` to assign the final results to a new table for use later.
+- There are numerical questions on this exam. For integers (1, 2, 3, 4, 5), enter the answer exactly. For everything else, going out to the first decimal place should be adequate. In other words, if R tells you the answer is 10.123456789, the correct answer is 10.1. If R tells you 10.56789, the correct answer is 10.6.
+
+
+
+# SETUP
+
+```{r}
+#| label: setup
+#| message: false
+
+library(Stat2Data)
+library(janitor)
+library(rio)
+library(tidyverse)
+options(scipen = 999)
+
+# This midterm uses TWO data sets.
+
+# Import appointments data and make column names lower case.
+appointments <- import("./data/Appointments.csv") |> clean_names()
+
+# Import High Peaks data and make column names lower case.
+data(HighPeaks)
+high_peaks <- HighPeaks |> clean_names()
+rm(HighPeaks)
+```
+
+There are TWO data sets used in this quiz and the setup chunk imports both of them. 
+
+- appointments: A health care data set from Brazil on no-show appointments at a clinic.
+- high_peaks: A data set from the Adirondacks of New York which tells us how long it takes to hike certain peaks.
+- Please review/examine the data before trying to use it.
+  - The setup chunk, above, imports both data sets and then sets column names/table names to lower case.
+
+
+
+# Appointments
+
+- A no-show appointment occurs when a patient makes an appointment with their doctor, receives all of the instructions, and does not come to their appointment. Understanding the likelihood of a patient skipping their appointment is helpful for providers and their staff.
+- Although this data set is specific to Brazil, this is a very real problem in the US health care system as well.
+- For more information: <https://www.kaggle.com/joniarroba/noshowappointments>
+- 💡💡💡 Each row of data is a *single appointment*.
+  - A patient may have more than one appointment (many do).
+- Please make yourself aware of the funky spelling of some columns.
+
+```{r}
+appointments
+```
+
+## Data Dictionary
+
+  - patient_id: Unique identifier for that patient.
+  - appointment_id: Unique identifier for each appointment
+  - gender: Male (M) or Female (F).
+  - appointment_date: The Date (YYYY-MM-DD) of the appointment
+  - appointment_day: An abbreviation of the name of the day of the
+    appointment (Mon, Tue, etc.)
+  - appointment_month: The abbreviation of the name of the month of the
+    appointment.
+  - age: Patient age, on the day of the appointment, in years.
+  - neighbourhood: Where the appointment takes place.
+    - Note the unusual spelling of this column name.
+  - Scholarship: TRUE or FALSE
+      - For more detail:
+        <https://en.wikipedia.org/wiki/Bolsa_Fam%C3%ADlia>
+  - hipertension: Does the patient have hypertension? TRUE or FALSE
+      - Note the unusual spelling of this column name.
+  - diabetes: Does the patient have diabetes? TRUE or FALSE
+  - alcoholism: Does the patient have diabetes? TRUE or FALSE
+  - handcap: Does the patient have a handicap? TRUE or FALSE
+      - Note the unusual spelling of this column name.
+      - This is not my typo.
+  - received_sms: Did the patient receive a SMS? TRUE or FALSE
+  - no_show: Did the patient no-show? TRUE or FALSE
+      - **Hint:** R treats Boolean TRUE values as equal to 1 and FALSE
+        values as equal to 0. You can sum a column of TRUE/FALSE values
+        to get the count of TRUE.
+      - We have talked about this in class!
+
+## Task 01: 822145925426128
+
+- Questions (2):
+  1. How many appointments did patient 822145925426128 (`patient_id`) have?
+  2. How many no-show appointments did 822145925426128 have?
+- Answer: 
+  1. Appointments: 88
+  2. No-show Appointments: 1
+
+Hint: The correct answer is a count of appointments for this patient.
+
+```{r}
+# Simplest way to get the appointments count.
+# But it doesn't give us an easy way to get the count of no-shows.
+appointments |>
+  filter(patient_id == 822145925426128)
+
+# But we could do this:
+appointments |>
+  filter(patient_id == 822145925426128, no_show)
+
+```
+
+```{r}
+# Better answer:
+appointments |>
+  filter(patient_id == 822145925426128) |>
+  summarize(
+    appointments = n(),
+    no_shows = sum(no_show)
+    )
+```
+
+
+## Task 02: How Many No-Shows Over-all?
+
+- Question: Over-all, how many no-show appointments were there?
+- Answer: 22,319
+
+Helpful Hints:
+
+- You may notice that `no_show` is a TRUE/FALSE column, a Boolean.
+    - R handles these values in a special way.
+    - TRUE == 1
+    - FALSE == 0
+    - So, if you `sum()` a column of TRUE/FALSE values the end result is the count of rows equal to TRUE.
+    - Yes, this is smashingly convenient.
+- The correct answer is a count of no-show appointments for ALL patients.
+
+```{r}
+# This question actually gives you a lot of useful information.
+
+# Simplest solution:
+appointments |> filter(no_show)
+
+# OR
+appointments |> filter(no_show) |> count()
+
+# OR
+appointments |> count(no_show)
+
+# OR
+appointments |> group_by(no_show) |> count()
+
+# OR!!!!
+appointments |> summarize(no_shows= sum(no_show))
+
+# OR !!!
+appointments |> group_by(no_show) |> summarize(n =)
+```
+
+## Task 03: No-Shows by Neighbourhood?
+
+- Question: Which neighbourhood had the most no-shows?
+- Answer: Jardim Camburi
+
+Helpful Hints;
+
+- Spelling matters. 👀
+- You can use your code from Task 01 to help you.
+
+```{r}
+appointments |> 
+  # Our IDE gives us this spelling!
+  group_by(neighbourhood) |>
+  summarize(no_shows = sum(no_show)) |>
+  arrange(desc(no_shows))
+
+# OR
+appointments |>
+  filter(no_show) |>
+  group_by(neighbourhood) |>
+  count() |>
+  arrange(desc(n))
+
+# OR
+appointments |>
+  filter(no_show) |>
+  count(neighbourhood) |>
+  arrange(desc(n))
+
+```
+
+## Task 04: Plot No-Shows by Neighbourhood
+
+- Question: Plot No-Show appointments by neighborhood and upload the graph to Canvas.
+- Answer: Plot
+
+Helpful Hints:
+
+- This should be a bar plot. You can use, geom_bar or geom_col
+- I suggest you place neighbourhood on your y-axis.
+    - When you maximize the size of the plot, it is legible.
+    - If you don't . . . . . yeah. It won't be.
+    - The button to maximize your graph is on the upper right of the plot below the code chunk.
+- If, for some reason, your plot uploads as a red square, email me your plot. 
+
+```{r}
+# This was apparently a hard one.
+# I am reusing some of my code from the previous question.
+appointments |> 
+  group_by(neighbourhood) |>
+  summarize(no_shows = sum(no_show)) |>
+  ggplot(aes(x = no_shows, y = neighbourhood)) +
+  geom_col()
+
+# OR
+appointments |>
+  filter(no_show) |>
+  group_by(neighbourhood) |>
+  count() |>
+  ggplot(aes(x = n, y = neighbourhood)) +
+  geom_col()
+
+# BUT NOT (OK, YES, I GAVE SOME POINTS FOR THIS ANSWER)
+appointments |>
+  group_by(neighbourhood) |>
+  count() |>
+  ggplot(aes(x = n, y = neighbourhood)) +
+  geom_col()
+
+```
+
+
+## Task 05: No-Shows For Patients Over 50
+
+- Question:  How many no-show appointments were recorded by patients over the age of 50?
+- Answer: 5,727
+
+Helpful Hint: Answer with an integer.
+
+```{r}
+appointments |>
+  filter(age > 50) |>
+  #filter(neighbourhood == "JARDIM CAMBURI") |>
+  summarize(no_shows = sum(no_show))
+```
+
+## Task 06: Average Age/Standard Deviation of Age
+
+- Questions (2):
+  - What is the average age of no-show patients (`mean()`)?
+  - What is the standard deviation of the age of arrived patients (`sd()`)?
+    - Note: An arrived patient is the opposite of a no-show!
+- Answers: 
+  - Average Age: 34.31767
+  - Standard Deviation of Age: 23.33888
+
+Helpful Hint: For this measure, some patients may have more than one no-show or arrived appointment, and that is FINE.
+
+```{r}
+appointments |>
+  filter(no_show == TRUE) |>
+  summarise(
+    average_age = mean(age),
+    sd_age = sd(age)
+    )
+
+appointments |>
+filter(!no_show) |>
+  summarise(
+    average_age = mean(age),
+    sd_age = sd(age)
+    )
+
+appointments |>
+filter(no_show == FALSE) |>
+  summarise(
+    average_age = mean(age),
+    sd_age = sd(age)
+    )
+```
+
+## Task 07: Received SMS
+
+Question: Who had a higher no-show rate? Patients who received a SMS message or those who did not?
+Answer: Received SMS
+
+Helpful Hints:
+
+  - One popular intervention for no-shows is to call patients before their appointment.
+  - In `appointments` we have a column called `received_sms`. Where `TRUE`, these patients received a text message reminding them of their upcoming appointment.
+  - Who had a higher no-show rate? Those who did or those who did not receive a SMS reminder?
+  - You will need to group by `received_sms` and then calculate the rate of no-shows for each group.
+  - Remember, you can name the columns in `summarize()`.
+      - You will need two columns. And PLEASE NAME THEM to make them usable later.
+      - One column for the total number of No Shows.
+      - One column for the total number of appointments.
+  - Use `mutate()` to create a new column for the rate of No Shows.
+  - Comparing these groups per 1,000 appointments will be easier to read.
+
+```{r}
+# This one gave folks a hard time.
+appointments |>
+  group_by(received_sms) |>
+  summarize(
+    appointments = n(),
+    no_shows = sum(no_show)) |>
+  mutate(rate = 1000*no_shows/appointments)
+
+appointments |>
+  group_by(received_sms) |>
+  summarize(
+    appointments = n(),
+    no_shows = sum(no_show),
+    rate = 1000*no_shows/appointments
+  )
+```
+
+Do these results surprise you? They might. Try to think of one or two reasons why this could be true.
+
+## Task 08: Chronic Conditions
+
+- Question: Which group has a higher no-show rate? Patients with hypertension, diabetes or the over-all population?
+- Answer: 
+
+Helpful Hints:
+
+- First Step:
+    - Create a new table, called `no_show_hyper` which compares the no-show rate of patients with/without hypertension.
+        - Use column `Hipertension`
+    - Create a new table, called `no_show_diab` which compares the no-show  rate of patients with/without diabetes.
+    - Create a third and final table called no_show_overall which compares the no-show rate for the over-all population.
+    - The rate to use is no-shows per 1,000 appointments. To calculate percent, you would simply multiply no_show count/total appointment count and multiply this by 100. So how would you calculate per 1,000 appointments?
+- Second Step:
+    - For diabetes, create a bar plot (`geom_col()`) comparing the rate of no-shows per 1,000 appointments.
+    - Please upload this plot.
+- Third Step:
+    - Compared to the over-all population, how would you describe the no-show rate of patients with these chronic conditions?
+        - Higher no-show rate
+        - Lower no-show rate
+        - Similar no-show rate
+
+```{r}
+no_show_hyper <-
+  appointments |>
+  group_by(hipertension) |>
+  summarize(appointments = n(), no_shows = sum(no_show)) |>
+  mutate(rate = 1000*no_shows/appointments)
+
+no_show_diab <-
+  appointments |>
+  group_by(diabetes) |>
+  summarize(appointments = n(), no_shows = sum(no_show)) |>
+  mutate(rate = 1000*no_shows/appointments)
+
+no_show_overall <-
+  appointments |>
+  summarize(appointments = n(), no_shows = sum(no_show)) |>
+  mutate(rate = 1000*no_shows/appointments)
+
+# We can see these in the global environment,
+# or print them into our notebook.
+ggplot(no_show_diab, aes(x = diabetes, y = rate)) + geom_col()
+
+# OR
+ggplot(no_show_diab, aes(x = rate, y = diabetes)) + geom_col()
+```
+
+## Task 09: Distribution of No-Shows
+
+Question: Draw a density or histogram plot of the no-shows per patient.
+Answer: 
+
+Helpful Hints:
+
+- Create a new table, called `no_show_counts`.
+- Remember:
+  - The `appointments` table is at the appointment grain!
+  - Patients can/do have more than one appointment.
+  - This new table, `no_show_counts`, will be at the patient grain.
+  - This means each row in `no_show_counts` should be a single patient and no patient should duplicate.
+- Create a histogram showing the distribution of no-show appointments.
+  - Upload your histogram of no-shows.
+- How many distinct patients are in your `no_show_counts` table?
+  - If you made your table right, this should be the number of rows in your `no_show_counts` table.
+- How would you describe the distribution of no-shows?
+  - Normally distributed
+  - Positively Skewed
+
+Right Answer:
+
+```{r}
+# THIS IS THE RIGHT ANSWER!!!
+no_show_counts <-
+  appointments |>
+  group_by(patient_id) |>
+  summarize(no_shows = sum(no_show))
+
+ggplot(no_show_counts, aes(x = no_shows)) + geom_histogram()
+ggplot(no_show_counts, aes(x = no_shows)) + geom_density()
+```
+
+Wrong Answer - Filtered:
+
+Not the right answer, because it EXCLUDES patients with ZERO no-shows.
+
+```{r}
+# NOT THE RIGHT ANSWER
+# BUT SOME OF YOU DID THIS!
+filtered_no_show_counts <-
+  appointments |>
+  filter(no_show) |>
+  group_by(patient_id) |>
+  summarize(no_shows = sum(no_show))
+
+ggplot(filtered_no_show_counts, aes(x = no_shows)) +
+  geom_density()
+ggplot(filtered_no_show_counts, aes(x = no_shows)) +
+  geom_histogram()
+```
+
+Wrong Answer - NO Shows Grouped:
+
+```{r}
+# NOT THE RIGHT ANSWER
+# BUT SOME OF YOU DID THIS!
+grouped_no_show_counts <-
+  appointments |>
+  group_by(patient_id, no_show) |>
+  summarize(no_shows = sum(no_show))
+
+ggplot(grouped_no_show_counts, aes(x = no_shows)) +
+  geom_density()
+ggplot(grouped_no_show_counts, aes(x = no_shows)) +
+  geom_histogram()
+```
+
+## Task 10: No-Shows over 50 years of age
+
+- Create a column which identifies patients who are over 50 years old.
+- Call this new column `over_50`. (Use `mutate()`) and this is a simple comparison/Boolean in the mutate function.
+- This column should contain TRUE/FALSE values for each appointment. In other words, this new column goes into the `appointments` table, not a new table.
+- How would you describe the no-show rate of patients over 50 compared to other patients?
+  - Higher
+  - Lower
+  - About the same
+- Once you have created your new column, this is very similar to Task 7.  
+
+```{r}
+appointments <-
+  appointments |>
+  mutate(over_50 = age > 50)
+
+appointments |>
+  group_by(over_50) |>
+  summarize(appointments = n(), no_shows = sum(no_show)) |>
+  mutate(rate = 1000*no_shows/appointments)
+```
+
+
+
+# High Peaks
+
+```{r}
+high_peaks
+```
+
+## Details
+Forty-six mountains in the Adirondacks of upstate New York are known as the High Peaks with elevations near or above 4000 feet (although modern measurements show a couple of the peaks are actually slightly under 4000 feet). A goal for hikers in the region is to become a "46er" by scaling each of these peaks. This data set gives information about the hiking trails up each of these peaks.
+
+Source: High Peaks data available at http://www.adirondack.net/tour/hike/highpeaks.cfm. Thanks to Jessica Chapman at St. Lawrence University for recommending this data set.
+
+## Data Dictionary:
+
+- peak: Name of the mountain
+- elevation: Elevation at the highest point (in feet)
+- difficulty: Rating of difficulty of the hike: 1 (easy) to 7 (most difficult)
+- ascent: Vertical ascent (in feet)
+- length: Length of hike (in miles)
+- time: Expected trip time (in hours)
+
+## Task 11
+
+We can use this data to predict the amount of time it will take to complete a hike in the Adirondacks.
+
+- Questions (2):
+  - Which is better correlated with hike time, the length of the hike or the height of the ascent?
+  - Plot the scatter plot showing the relationship between the length/ascent of the hike (x) and time (y).
+      - In other words, time as a function of length/ascent.
+  - Which column is a better predictor of time, length or ascent? Why?
+- Extra Credit: If you draw in the linear regression line using ggplot, I'll give you an extra five points.
+- Answer: length or ascent, and why
+
+Helpful Hints:
+
+- When we say time as a function length/ascent, we mean that time is our dependent variable and length/ascent are our independent variables. And we want to know WHICH independent variable is a better predictor of time.
+- This can also be written as time~ascent.
+- I am looking for 2-3 sentences. I am not asking for a five-paragraph theme.
+
+```{r}
+ggplot(high_peaks, aes(x = length, y = time)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+ggplot(high_peaks, aes(x = ascent, y = time)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+
+
+# Have a great spring break!!!
