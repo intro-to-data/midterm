@@ -7,25 +7,29 @@ format: html
 
 The goal of this quiz is to assess your understanding of the dplyr verbs and plotting skills we have learned thus far. You may use the following resources on the quiz:
 
-  - All class lecture notes, labs, cheat sheets from RStudio, hints.Rmd etc.
+  - All class lecture notes, labs, cheat sheets from RStudio, etc.
   - Any assigned reading/video.
   - Google (If you are really desperate, Bing.)
   - Stack Overflow
 
-However, I must require you to complete your own exam. You may not help anyone else in the class and you may not accept help from anyone else in the class. If you have any questions, please ask me. Any clarifications I make will be announced to the entire class. 
+**However, I must require you to complete your own exam.**
+
+You may not help anyone else in the class and you may not accept help from anyone else in the class. If you have any questions, please ask me. Any clarifications I make will be announced to the entire class. 
 
 This quiz focuses on single table data transformations and plotting.
 
 ## Useful Reminders
 
-- Use a SINGLE EQUALS SIGN to assign the value of a parameter in a function.
-- Use DOUBLE EQUAL SIGNS for Boolean tests (in filter).
-- Use `<-` to assign the final results to a new table for use later.
+- Use a SINGLE EQUALS SIGN to assign the value of a parameter in a function. `foo(a = 1)`
+- Use DOUBLE EQUAL SIGNS for Boolean tests (in filter). `df |> filter(something == 1)`
+- Use `<-` to assign the final results to a new table for use later. `new_df <- df |> filter(something == 1)`
 - There are numerical questions on this exam. For integers (1, 2, 3, 4, 5), enter the answer exactly. For everything else, going out to the first decimal place should be adequate. In other words, if R tells you the answer is 10.123456789, the correct answer is 10.1. If R tells you 10.56789, the correct answer is 10.6.
 
 
 
 # SETUP
+
+You must run this!
 
 ```{r}
 #| label: setup
@@ -59,10 +63,12 @@ There are TWO data sets used in this quiz and the setup chunk imports both of th
 
 # Appointments
 
-- A no-show appointment occurs when a patient makes an appointment with their doctor, receives all of the instructions, and does not come to their appointment. Understanding the likelihood of a patient skipping their appointment is helpful for providers and their staff.
+- A no-show appointment occurs when a patient makes an appointment with the doctor, but fails to attend.
+- Understanding the likelihood of a patient skipping their appointment is helpful for providers and their staff.
 - Although this data set is specific to Brazil, this is a very real problem in the US health care system as well.
 - For more information: <https://www.kaggle.com/joniarroba/noshowappointments>
-- 💡💡💡 Each row of data is a *single appointment*.
+- Grain:
+  - 💡💡💡 Each row of data is a *single appointment*.
   - A patient may have more than one appointment (many do).
 - Please make yourself aware of the funky spelling of some columns.
 
@@ -179,7 +185,7 @@ appointments |> group_by(no_show) |> summarize(n =)
 Helpful Hints;
 
 - Spelling matters. 👀
-- You can use your code from Task 01 to help you.
+- You can may be able to use your code from Task 01 to help you.
 
 ```{r}
 appointments |> 
@@ -246,7 +252,7 @@ appointments |>
 
 ## Task 05: No-Shows For Patients Over 50
 
-- Question:  How many no-show appointments were recorded by patients over the age of 50?
+- Question: How many no-show appointments were recorded by patients over the age of 50?
 - Answer: 5,727
 
 Helpful Hint: Answer with an integer.
@@ -333,7 +339,7 @@ Do these results surprise you? They might. Try to think of one or two reasons wh
 
 ## Task 08: Chronic Conditions
 
-- Question: Which group has a higher no-show rate? Patients with hypertension, diabetes or the over-all population?
+- Question: Which group has a higher no-show rate? Patients with hypertension, diabetes, or the over-all population?
 - Answer: 
 
 Helpful Hints:
@@ -479,6 +485,7 @@ high_peaks
 ```
 
 ## Details
+
 Forty-six mountains in the Adirondacks of upstate New York are known as the High Peaks with elevations near or above 4000 feet (although modern measurements show a couple of the peaks are actually slightly under 4000 feet). A goal for hikers in the region is to become a "46er" by scaling each of these peaks. This data set gives information about the hiking trails up each of these peaks.
 
 Source: High Peaks data available at http://www.adirondack.net/tour/hike/highpeaks.cfm. Thanks to Jessica Chapman at St. Lawrence University for recommending this data set.
@@ -520,6 +527,3 @@ ggplot(high_peaks, aes(x = ascent, y = time)) +
   geom_smooth(method = "lm")
 ```
 
-
-
-# Have a great spring break!!!
