@@ -3,9 +3,19 @@ title: "Quiz 01 - Midterm"
 format: html
 ---
 
-# Instructions
+# Instructions  <--- YOU SHOULD READ THESE!!!
 
-The goal of this quiz is to assess your understanding of the dplyr verbs and plotting skills we have learned thus far. You may use the following resources on the quiz:
+Each Task, below, is worth 10 points. 
+
+- If you enter the correct answer in Canvas, you earn all 10 points.
+- If you enter an incorrect answer, I will look at your code and will award partial credit wherever possible.
+    - However, if you do not write any code, I cannot award any partial credit.
+    - So try, even if you aren't sure.
+- Some Tasks ask for two answers. In Canvas each question will be worth five points, for a total of 10 points for the task.
+- You will notice that some questions in Canvas are worth 12 points. This is because I'm asking you for an explanation/description. For these questions I will award up to 10 points for the code/answer. The additional two points is for how well you answer the question. I will assess spelling and grammar, so take your time and don't lose those two points by offering my an incomplete sentence with appointments spelled incorrectly.
+- If you aren't sure of an answer, guess. I will never understand why people leave multiple choice questions blank. What have you got to lose?
+
+The goal of the midterm is to assess your understanding of the dplyr verbs and plotting skills we have learned thus far. You may use the following resources on the quiz:
 
   - All class lecture notes, labs, cheat sheets from RStudio, etc.
   - Any assigned reading/video.
@@ -16,20 +26,24 @@ The goal of this quiz is to assess your understanding of the dplyr verbs and plo
 
 You may not help anyone else in the class and you may not accept help from anyone else in the class. If you have any questions, please ask me. Any clarifications I make will be announced to the entire class. 
 
-This quiz focuses on single table data transformations and plotting.
-
 ## Useful Reminders
 
 - Use a SINGLE EQUALS SIGN to assign the value of a parameter in a function. `foo(a = 1)`
 - Use DOUBLE EQUAL SIGNS for Boolean tests (in filter). `df |> filter(something == 1)`
 - Use `<-` to assign the final results to a new table for use later. `new_df <- df |> filter(something == 1)`
-- There are numerical questions on this exam. For integers (1, 2, 3, 4, 5), enter the answer exactly. For everything else, going out to the first decimal place should be adequate. In other words, if R tells you the answer is 10.123456789, the correct answer is 10.1. If R tells you 10.56789, the correct answer is 10.6.
-
+- There are numerical questions on this exam. For integers (1, 2, 3, 4, 5), enter the answer exactly. For everything else, going out to the first decimal place is adequate. 
+    - Example 1: If R tells you the answer is 10.123456789, 10.1 is the answer Canvas is looking for. 
+    - Example 2: If R tells you 10.56789, the answer Canvas is looking for is 10.6.
+- I did include hints.md in this project, so you can look at that.
 
 
 # SETUP
 
-You must run this!
+- You must run the setup chunk, below, before attempting to complete any of the tasks below. 
+- There are **TWO** data sets used in this midterm: 
+    - appointments: A health care data set from Brazil of no-show appointments at a clinic.
+    - high_peaks: A data set from the Adirondacks of New York which tells us how long it takes to hike certain peaks.
+- If you have difficulty loading either data set, please let me know immediately.
 
 ```{r}
 #| label: setup
@@ -43,21 +57,24 @@ options(scipen = 999)
 
 # This midterm uses TWO data sets.
 
-# Import appointments data and make column names lower case.
-appointments <- import("./data/Appointments.csv") |> clean_names()
+# Imports appointments data:
+#  - Sets column names to lower case
+#  - Fixes some unusual spelling conventions in the column names
+appointments <-
+  read_csv("./data/Appointments.csv") |>
+  clean_names() |>
+  rename(
+    handicap = handcap,
+    hypertension = hipertension,
+    neighborhood = neighbourhood
+  )
 
-# Import High Peaks data and make column names lower case.
+# Imports High Peaks data and sets column names to lower case.
 data(HighPeaks)
 high_peaks <- HighPeaks |> clean_names()
 rm(HighPeaks)
+
 ```
-
-There are TWO data sets used in this quiz and the setup chunk imports both of them. 
-
-- appointments: A health care data set from Brazil on no-show appointments at a clinic.
-- high_peaks: A data set from the Adirondacks of New York which tells us how long it takes to hike certain peaks.
-- Please review/examine the data before trying to use it.
-  - The setup chunk, above, imports both data sets and then sets column names/table names to lower case.
 
 
 
@@ -67,225 +84,199 @@ There are TWO data sets used in this quiz and the setup chunk imports both of th
 - Understanding the likelihood of a patient skipping their appointment is helpful for providers and their staff.
 - Although this data set is specific to Brazil, this is a very real problem in the US health care system as well.
 - For more information: <https://www.kaggle.com/joniarroba/noshowappointments>
-- Grain:
+    The setup chunk,above, renames a few columns to make your life easier.
+
+Grain:
+
 - 💡💡💡 Each row of data is a *single appointment*.
-  - A patient may have more than one appointment (many do).
-- Please make yourself aware of the funky spelling of some columns.
+- A patient may have more than one appointment (many do).
 
 ```{r}
+
 appointments
+
 ```
 
 ## Data Dictionary
 
-  - patient_id: Unique identifier for that patient.
-  - appointment_id: Unique identifier for each appointment
-  - gender: Male (M) or Female (F).
-  - appointment_date: The Date (YYYY-MM-DD) of the appointment
-  - appointment_day: An abbreviation of the name of the day of the
+  - `patient_id`: Unique identifier for that patient.
+  - `appointment_id`: Unique identifier for each appointment
+  - `gender`: Male (M) or Female (F).
+  - `appointment_date`: The Date (YYYY-MM-DD) of the appointment
+  - `appointment_day`: An abbreviation of the name of the day of the
     appointment (Mon, Tue, etc.)
-  - appointment_month: The abbreviation of the name of the month of the
+  - `appointment_month`: The abbreviation of the name of the month of the
     appointment.
-  - age: Patient age, on the day of the appointment, in years.
-  - neighbourhood: Where the appointment takes place.
-    - Note the unusual spelling of this column name.
-  - Scholarship: TRUE or FALSE
+  - `age`: Patient age, on the day of the appointment, in years.
+  - `neighborhood`: Where the appointment takes place.
+  - `scholarship`: TRUE or FALSE
       - For more detail:
         <https://en.wikipedia.org/wiki/Bolsa_Fam%C3%ADlia>
-  - hipertension: Does the patient have hypertension? TRUE or FALSE
-      - Note the unusual spelling of this column name.
-  - diabetes: Does the patient have diabetes? TRUE or FALSE
-  - alcoholism: Does the patient have diabetes? TRUE or FALSE
-  - handcap: Does the patient have a handicap? TRUE or FALSE
-      - Note the unusual spelling of this column name.
-      - This is not my typo.
-  - received_sms: Did the patient receive a SMS? TRUE or FALSE
-  - no_show: Did the patient no-show? TRUE or FALSE
-      - **Hint:** R treats Boolean TRUE values as equal to 1 and FALSE
-        values as equal to 0. You can sum a column of TRUE/FALSE values
-        to get the count of TRUE.
-      - We have talked about this in class!
+  - `hypertension`: Identifies patients with hypertension? TRUE or FALSE
+  - `diabetes`: Identifies patients with diabetes? TRUE or FALSE
+  - `alcoholism`: Identifies patients with alcoholism? TRUE or FALSE
+  - `handicap`: Identifies patients with a handicap? TRUE or FALSE
+  - `received_sms`: Did the patient receive a SMS? TRUE or FALSE
+  - `no_show`: Did the patient no-show? TRUE or FALSE
+      - **Helpful Hint:** 
+          - R treats Boolean TRUE values as equal to 1
+          - R treats Boolean FALSE values as equal to 0.
+          - You can sum a column of TRUE/FALSE values to get the count of TRUE.
+
 
 ## Task 01: 822145925426128
 
 - Questions (2):
-  1. How many appointments did patient 822145925426128 (`patient_id`) have?
-  2. How many no-show appointments did 822145925426128 have?
+    1. How many appointments did patient 822145925426128 
+    2. How many no-show appointments did 822145925426128 have?
 - Answer: 
-  1. Appointments: 
-  2. No-show Appointments: 
-
-Hint: The correct answer is a count of appointments for this patient.
+    1. Appointments: 
+    2. No-show Appointments: 
+- Helpful Hint:
+    - Each row of data is an appointment.
+    - Use the `patient_id` column.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
 
-## Task 02: How Many No-Shows Over-all?
+## Task 02: Average Age of Patients By Gender
 
-- Question: Over-all, how many no-show appointments were there?
+- Question: Using the patient's age at the time of their appointment, which gender is older?
+    - F: Female
+    - M: Male
 - Answer:
+- Helpful Hint:
+    - Calculate the average age per gender.
 
-Helpful Hints:
+```{r}
+## YOUR CODE HERE!
+```
 
-- You may notice that `no_show` is a TRUE/FALSE column, a Boolean.
+
+## Task 03: Oldest Diabetic Patient
+
+- Question: How old is the oldest diabetic patient?
+- Answer: 
+
+```{r}
+## YOUR CODE HERE!
+```
+
+
+## Task 04: Plot Number Of No-Shows by Appointment Day
+
+Create a bar plot of No-Show appointments by appointment day and use your plot to answer the following question. Upload your graph to Canvas to support your answer.
+
+- Question: Among those days which are in our data set, which day of the week has the fewest total no-shows?
+    - Monday
+    - Tuesday
+    - Wednesday
+    - Thursday
+    - Friday
+    - Saturday
+- Answer: 
+- Helpful Hints:
+    - This should be a bar plot.
+    - This is a plot of total no-show appointment, not the percentage.
+    - The answer is not Sunday.
+
+```{r}
+## YOUR CODE HERE!
+```
+
+
+## Task 05: Count of No-Show Appointments
+
+- Question: How many no-show appointments are there in the data?
+- Answer:
+- Helpful Hints:
+    - Observe that `no_show` is a Boolean (TRUE/FALSE) column.
     - R handles these values in a special way.
-    - TRUE == 1
-    - FALSE == 0
-    - So, if you `sum()` a column of TRUE/FALSE values the end result is the count of rows equal to TRUE.
-    - Yes, this is smashingly convenient.
-- The correct answer is a count of no-show appointments for ALL patients.
+        - TRUE == 1
+        - FALSE == 0
+        - If you `sum()` a column of TRUE/FALSE values the end result is the count of rows equal to TRUE.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
-## Task 03: No-Shows by Neighbourhood?
 
-- Question: Which neighbourhood had the most no-shows?
+## Task 06: Percent No-Show
+
+- Question: What percentage of appointments are no-shows?
 - Answer: 
-
-Helpful Hints;
-
-- Spelling matters. 👀
-- You can may be able to use your code from Task 01 to help you.
-
-```{r}
-## YOUR CODE HERE!
-```
-
-## Task 04: Plot No-Shows by Neighbourhood
-
-- Question: Plot No-Show appointments by neighborhood and upload the graph to Canvas.
-- Answer: 
-
-Helpful Hints:
-
-- This should be a bar plot. You can use, geom_bar or geom_col
-- I suggest you place neighbourhood on your y-axis.
-    - When you maximize the size of the plot, it is legible.
-    - If you don't . . . . . yeah. It won't be.
-    - The button to maximize your graph is on the upper right of the plot below the code chunk.
-- If, for some reason, your plot uploads as a red square, email me your plot. 
+- Helpful Hints:
+    - Reuse your code from Task 05 to get started.
+    - You will need to name your calculated columns.
+    - Remember, each row in our data set is an appoinment.
+    - Don't forget about the `n()` function.
+    - You can use `mutate()` to help you calculate the percent.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
 
-## Task 05: No-Shows For Patients Over 50
+## Task 07: Risk of No-Show, Received SMS
 
-- Question: How many no-show appointments were recorded by patients over the age of 50?
-- Answer: 5,727 
+For this task, I want you to write down a hypothesis before you write any code. Record your hypothesis and a brief explanation below. Then use the tools we have learned in this class to answer the the question and write that down next to "Conclusion", below.
 
-Helpful Hint: Answer with an integer.
-
-```{r}
-## YOUR CODE HERE!
-```
-
-## Task 06: Average Age/Standard Deviation of Age
-
-- Questions (2):
-  - What is the average age of no-show patients (`mean()`)?
-  - What is the standard deviation of the age of arrived patients (`sd()`)?
-    - Note: An arrived patient is the opposite of a no-show!
-- Answers: 
-  - Average Age:
-  - Standard Deviation of Age: 
-
-Helpful Hint: For this measure, some patients may have more than one no-show or arrived appointment, and that is FINE.
+- Question: About 32 percent of appointments received a SMS call reminder before their appointment. When patients received a SMS call, were they more or less likely to no-show, compared to those who did NOT receive a a SMS reminder?
+- Hypothesis:
+- Conclusion:
+- Were you surprised?
+- Helpful Hints:
+    - This has become standard practice in the US.
+    - To support your answer, copy/paste your output from R to Canvas.
+    - I am not looking for a plot. I am looking for a set of calculations showing risk of no-show across two groups.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
-## Task 07: Received SMS
+Do these results surprise you?
 
-Question: Who had a higher no-show rate? Patients who received a SMS message or those who did not?
-Answer: 
 
-Helpful Hints:
+## Task 08: Distribution of No-Shows
 
-  - One popular intervention for no-shows is to call patients before their appointment.
-  - In `appointments` we have a column called `received_sms`. Where `TRUE`, these patients received a text message reminding them of their upcoming appointment.
-  - Who had a higher no-show rate? Those who did or those who did not receive a SMS reminder?
-  - You will need to group by `received_sms` and then calculate the rate of no-shows for each group.
-  - Remember, you can name the columns in `summarize()`.
-      - You will need two columns. And PLEASE NAME THEM to make them usable later.
-      - One column for the total number of No Shows.
-      - One column for the total number of appointments.
-  - Use `mutate()` to create a new column for the rate of No Shows.
-  - Comparing these groups per 1,000 appointments will be easier to read.
+Create a density plot of the no-shows per patient. Use it to answer the following question.
 
-```{r}
-## YOUR CODE HERE!
-```
-
-Do these results surprise you? They might. Try to think of one or two reasons why this could be true.
-
-## Task 08: Chronic Conditions
-
-- Question: Which group has a higher no-show rate? Patients with hypertension, diabetes, or the over-all population?
-- Answer: 
-
-Helpful Hints:
-
-- First Step:
-    - Create a new table, called `no_show_hyper` which compares the no-show rate of patients with/without hypertension.
-        - Use column `Hipertension`
-    - Create a new table, called `no_show_diab` which compares the no-show  rate of patients with/without diabetes.
-    - Create a third and final table called no_show_overall which compares the no-show rate for the over-all population.
-    - The rate to use is no-shows per 1,000 appointments. To calculate percent, you would simply multiply no_show count/total appointment count and multiply this by 100. So how would you calculate per 1,000 appointments?
-- Second Step:
-    - For diabetes, create a bar plot (`geom_col()`) comparing the rate of no-shows per 1,000 appointments.
-    - Please upload this plot.
-- Third Step:
-    - Compared to the over-all population, how would you describe the no-show rate of patients with these chronic conditions?
-        - Higher no-show rate
-        - Lower no-show rate
-        - Similar no-show rate
+- Question: How would you describe the distribution of no-shows?
+    - Normally distributed
+    - Negatively Skwewed
+    - Positively Skewed
+- Answer: It is positively skewed and is very multi-modal.
+- Extra Credit: For 2.5 points, can you tell me why the density plot has so many bumps? 
+- Helpful Hints:
+    - Our `appointments` data is at the appointment grain.
+        - Some patients have more than one appointment.
+        - Therefore, some patients have more than one no-show.
+    - Step 1: Count the number of no-shows PER PATIENT!!!
+    - Step 2: Plot these counts.
+    - You may create your own data set OR pipe the data to ggplot.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
-## Task 09: Distribution of No-Shows
+## Task 09: No-Shows over 50 years of age
 
-Question: Draw a density or histogram plot of the no-shows per patient.
-Answer: 
-
-Helpful Hints:
-
-- Create a new table, called `no_show_counts`.
-- Remember:
-  - The `appointments` table is at the appointment grain!
-  - Patients can/do have more than one appointment.
-  - This new table, `no_show_counts`, will be at the patient grain.
-  - This means each row in `no_show_counts` should be a single patient and no patient should duplicate.
-- Create a histogram showing the distribution of no-show appointments.
-  - Upload your histogram of no-shows.
-- How many distinct patients are in your `no_show_counts` table?
-  - If you made your table right, this should be the number of rows in your `no_show_counts` table.
-- How would you describe the distribution of no-shows?
-  - Normally distributed
-  - Positively Skewed
-
-```{r}
-## YOUR CODE HERE!
-```
-
-## Task 10: No-Shows over 50 years of age
-
-- Create a column which identifies patients who are over 50 years old.
-- Call this new column `over_50`. (Use `mutate()`) and this is a simple comparison/Boolean in the mutate function.
-- This column should contain TRUE/FALSE values for each appointment. In other words, this new column goes into the `appointments` table, not a new table.
-- How would you describe the no-show rate of patients over 50 compared to other patients?
+- Question: How would you describe the no-show rate of patients over 50 compared to other patients?
+  - About the same
   - Higher
   - Lower
-  - About the same
-- Once you have created your new column, this is very similar to Task 7.  
+- Answer: 
+- Helpful Hints:
+    - There are two ways to solve this problem.
+    - Perform two calculations of risk. One for the population over 50 and one for everyone else. Compare these risks.
+    - Or . . . 
+    - Use `mutate()` and create a new column which identifies patients who are over 50 years old called `over_50`.
+    - This new column should contain TRUE/FALSE values for each appointment.
+    - Use this column to `group_by()`, to answer the question.
+    - Use your calculations to support your answer.
+        - Tell me the percent or how much higher or lower, or convince me they are roughly the same.
 
 ```{r}
 ## YOUR CODE HERE!
@@ -296,7 +287,9 @@ Helpful Hints:
 # High Peaks
 
 ```{r}
+
 high_peaks
+
 ```
 
 ## Details
@@ -314,25 +307,47 @@ Source: High Peaks data available at http://www.adirondack.net/tour/hike/highpea
 - length: Length of hike (in miles)
 - time: Expected trip time (in hours)
 
-## Task 11
+## Task 10 Difficulty and Time
 
-We can use this data to predict the amount of time it will take to complete a hike in the Adirondacks.
-
-- Questions (2):
-  - Which is better correlated with hike time, the length of the hike or the height of the ascent?
-  - Plot the scatter plot showing the relationship between the length/ascent of the hike (x) and time (y).
-      - In other words, time as a function of length/ascent.
-  - Which column is a better predictor of time, length or ascent? Why?
-- Extra Credit: If you draw in the linear regression line using ggplot, I'll give you an extra five points.
-- Answer: length or ascent, and why
-
-Helpful Hints:
-
-- When we say time as a function length/ascent, we mean that time is our dependent variable and length/ascent are our independent variables. And we want to know WHICH independent variable is a better predictor of time.
-- This can also be written as time~ascent.
-- I am looking for 2-3 sentences. I am not asking for a five-paragraph theme.
+- Question: On average, do more difficult hikes take more time than easier hikes?
+    - No
+    - Yes
+- Answer:
+    - Use your table to support your answer in Canvas.
+- Extra Credit:
+    - Plot this relationship between difficulty and average time to complete the hike and use this to support your answer and receive an extra 2.5 points.
+- Helpful Hints:
+    - In this data set, difficulty ranges from a score of 2 to a score of 7.
+    - Use your data transformation skills to calculate the average amount of time it takes to complete the hikes in each difficulty level.
+    - I think `geom_col()` may be of use if you want to plot this data rather than `geom_bar()`. 
+    - Name the column containining the average time to make it easier to use in `ggplot()`.
+    - You can round-trip Marcy in less than 10 hours during winter if you ski down it.
 
 ```{r}
 ## YOUR CODE HERE!
 ```
 
+
+## Task 11 Length vs Ascent
+
+Based purely on common sense, it should make sense to you that a longer hike will, on average, take more time than a shorter hike. Similarly, it should make sense that a longer ascent could also take longer than a shorter ascent. It is reasonable to assume that both length of the hike and ascent would be correlated with the amount of time it takes to complete a hike.
+
+Draw two scatter plots. The first scatter plot should show you the relationship between the length of the hike (x) and the hike time (y). The second plot should show you the relationship between the height of the ascent (x) and hike time (y).
+
+- Question: Based on your plots, which is a better predictor of hike time, the length of the hike or the height of the ascent?
+    - length
+    - ascent
+- Answer:
+- Helpful Hints:
+    - `geom_point()`
+    - The better predictor will typically have a steeper slope 
+- Extra Credit: If you add the linear regression line using ggplot, I'll give you an extra 2.5 points.
+- Helpful Hints:
+    - Make sure time is on the y axis in both plots.
+    - Time is our dependent variable.
+    - If your scatter plot points are close to your regression line, that is indicative of a stronger relationship.
+    - Steeper slopes are also indicative of a stronger relationship between the variables.
+
+```{r}
+## YOUR CODE HERE!
+```

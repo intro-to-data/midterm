@@ -12,4 +12,4 @@ p <- c(
 )
 install.packages(p)
 
-unlink("quiz-answers.qmd")
+unlink("midterm-answers.qmd")
