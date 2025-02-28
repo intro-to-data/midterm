@@ -14,6 +14,7 @@ Each Task, below, is worth 10 points.
 - Some Tasks ask for two answers. In Canvas each question will be worth five points, for a total of 10 points for the task.
 - You will notice that some questions in Canvas are worth 12 points. This is because I'm asking you for an explanation/description. For these questions I will award up to 10 points for the code/answer. The additional two points is for how well you answer the question. I will assess spelling and grammar, so take your time and don't lose those two points by offering my an incomplete sentence with appointments spelled incorrectly.
 - If you aren't sure of an answer, guess. I will never understand why people leave multiple choice questions blank. What have you got to lose?
+- I added hints.qmd to this project, for you to use.
 
 The goal of the midterm is to assess your understanding of the dplyr verbs and plotting skills we have learned thus far. You may use the following resources on the quiz:
 
